@@ -1,0 +1,45 @@
+﻿
+@{
+    ViewData["Title"] = "Index";
+    @model PruebaFront.Models.Login.LoginModel
+}
+
+@if (!User.Identity.IsAuthenticated)
+{
+    <div id="login" class="row">
+        <div id="login2" class="col-sm-9 col-md-7 col-lg-5 mx-auto">
+            <div class="card card-signin my-4">
+                <div class="card-body">
+                    <h4 class="text-center" style="font-family: 'Archivo Black', sans-serif;">INICIAR SESIÓN</h4>
+
+                    @Html.ValidationMessage("CustomError", new { @class = "text-danger" })
+
+
+                    @using (Html.BeginForm("Login", "Login", FormMethod.Post))
+                    {
+                        @Html.AntiForgeryToken()
+                        <div class="form-label-group">
+                            @Html.TextBoxFor(m => m.Email, new { id = "inputEmail", Class = "form-control", placeholder = "Correo", required = true, autofocus = true })
+                            @*<input type="email" id="inputEmail" class="form-control" placeholder="Email address" required autofocus>*@
+                            <label for="inputEmail">Correo</label>
+                        </div>
+
+                        <div class="form-label-group">
+                            @Html.TextBoxFor(m => m.Password, new { id = "inputPassword", Class = "form-control", placeholder = "Password", required = true, type = "password" })
+                            <label for="inputPassword">Contraseña</label>
+                        </div>
+
+                        <button class="btn btn-lg btn-primary btn-block text-uppercase" type="submit">Iniciar sesión</button>
+                    }
+                </div>
+
+            </div>
+        </div>
+    </div>
+}
+else
+{
+<a href='@Url.Action("Index", "Receipt")'>
+    <input type='button' value='Ir a bandeja de recibos.' />
+</a>
+}

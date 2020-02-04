@@ -1,0 +1,174 @@
+﻿
+@{
+    ViewData["Title"] = "Index";
+    @model List<PruebaFront.Models.Receipt.Receipt>
+}
+
+<h1>Administración de recibos.</h1> <a role="button" class="btn-sm btn-success float-lg-right" href="#" data-toggle="modal" data-target="#exampleModal" data-whatever="Create">Agregar recibo.</a>
+<table class="table">
+    <thead class="thead-dark">
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Amount</th>
+            <th scope="col">Moneda</th>
+            <th scope="col">Fecha</th>
+            <th scope="col">Proveedor</th>
+            <th scope="col">Comentario</th>
+            <th scope="col">ACCIONES</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <th id="id_@item.Id" scope="row">@item.Id</th>
+                <td id="amount_@item.Id">$@string.Format("{0:#.00}", Convert.ToDecimal(@item.Amount) / 100)</td>
+                <td id="currency_@item.Id">@item.Currency</td>
+                <td id="date_@item.Id">@item.Date.ToString().Substring(0,10)</td>
+                <td id="provider_@item.Id">@item.Provider</td>
+                <td id="comment_@item.Id">@item.Comment</td>
+                <td><a class="btn-sm btn-primary" href="#" role="button" data-toggle="modal" data-target="#exampleModal" data-whatever="Modify" data-id="@item.Id">Modificar</a>&nbsp;<a class="btn-sm btn-danger" href="Receipt/Delete/@item.Id" role="button">Eliminar</a></td>
+            </tr>
+        }
+
+    </tbody>
+</table>
+
+
+@*  Modal  *@
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">New message</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form method="post">
+                    <input id="Id" name="Id" hidden />
+                    <div class="form-group">
+                        <label for="Provider" class="col-form-label">Proveedor: </label>
+                        <input type="text" class="form-control" id="Provider" name="Provider" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="Amount" class="col-form-label">Monto: </label>
+                        <input type="number" class="form-control" id="Amount" name="Amount" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="CurrencyId" class="col-form-label">Moneda </label>
+                        @Html.DropDownList("Currency", (ViewBag.YourEnums as SelectList), new { @class = "form-control" })
+                    </div>
+                    <div class="form-group">
+                        <label for="Date" class="col-form-label">Fecha: </label>
+                        <input type="date" class="form-control" id="Date" name="Date" min="2000-01-01" max="2099-01-01">
+                    </div>
+                    <div class="form-group">
+                        <label for="Comment" class="col-form-label">Mensaje:</label>
+                        <textarea class="form-control" id="Comment" name="Comment"></textarea>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                        <button id="sendId" type="button" class="btn btn-primary">Enviar</button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<script>
+    $(document).ready(function () {
+        getTodayDate();
+        var option = "";
+
+        $('#exampleModal').on('show.bs.modal', function (event) {
+            debugger
+            var button = $(event.relatedTarget)
+            option = button.data('whatever')
+
+            if (option == "Modify") {
+                modify(button);
+            } else if (option == "Create") {
+                getTodayDate();
+            }
+
+            var modal = $(this)
+            modal.find('.modal-title').text('New message to ' + option)
+            modal.find('#message').val(option)
+        });
+
+        $('#exampleModal').on('hidden.bs.modal', function (e) {
+            $("#Provider").val("");
+            $("#Amount").val("");
+            $("#Comment").val("");
+
+            getTodayDate();
+        });
+
+        $("#sendId").on("click", function (e) {
+            e.preventDefault();
+            if (option == "Modify") {
+                $('form').attr('action', "/Receipt/Update").submit();
+            } else if (option == "Create") {
+                $('form').attr('action', "/Receipt/Create").submit();
+
+            }
+
+        });
+
+
+
+
+
+        function getTodayDate() {
+            var date = new Date();
+
+            var day = date.getDate();
+            var month = date.getMonth() + 1;
+            var year = date.getFullYear();
+
+            if (month < 10) month = "0" + month;
+            if (day < 10) day = "0" + day;
+
+            var today = year + "-" + month + "-" + day;
+            $("#Date").attr("value", today);
+        }
+
+        function modify(button) {
+            var Id = button.data('id');
+
+            var provider = $('#provider_' + Id).text();
+            var amount = $('#amount_' + Id).text();
+            var currency = $('#currency_' + Id).text();
+            var date = $('#date_' + Id).text().substring(0, 10);
+            var comment = $('#comment_' + Id).text();
+            var now = new Date(date);
+
+            var day = now.getDate();
+            var month = now.getMonth() + 1;
+            var year = now.getFullYear();
+
+            if (month < 10) month = "0" + month;
+            if (day < 10) day = "0" + day;
+
+            var today = year + "-" + day + "-" + month;
+
+            $("#Date").attr("value", today);
+
+            $("#Provider").val(provider);
+            $("#Amount").val(amount);
+            $("#Currency").val(currency);
+            $("#Id").val(Id);
+            //$("#Date").attr("value", date);
+
+            $("#Comment").val(comment);
+        }
+
+    });
+
+</script>
